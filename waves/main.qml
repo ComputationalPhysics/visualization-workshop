@@ -13,10 +13,53 @@ ApplicationWindow {
     Waves {
         id: simulator
         anchors.fill: parent
+        color: Qt.rgba(redSlider.value, greenSlider.value, blueSlider.value)
+        courant: courantSlider.value
+    }
+
+    Column {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+
+        width: parent.width * 0.3
+
+        Slider {
+            id: redSlider
+            width: parent.width
+            value: 1.0
+        }
+
+        Slider {
+            id: greenSlider
+            width: parent.width
+            value: 1.0
+        }
+
+        Slider {
+            id: blueSlider
+            width: parent.width
+            value: 1.0
+        }
+
+        Slider {
+            id: courantSlider
+            width: parent.width
+            value: 0.25
+            minimumValue: 0.01
+            maximumValue: 0.5
+        }
+
+        Slider {
+            id: intervalSlider
+            minimumValue: 1
+            maximumValue: 200
+            value: 16
+        }
     }
 
     Timer {
-        interval: 16
+        interval: intervalSlider.value
         running: true
         repeat: true
         onTriggered: {
