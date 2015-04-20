@@ -10,3 +10,25 @@
     - imports
     - ApplicationWindow
     - menuBar
+- Basic QML
+    - syntax: elements with properties in a tree
+    - properties
+    - custom properties
+    - scripting
+    - basic elements
+        - Item
+        - Rectangle
+        - Image
+        - Text
+    - mouse input with MouseArea
+        - anchors.fill
+        - onClicked
+        - drag
+    - QtQuick.Controls
+    - custom components
+- Advanced QML
+    - positioning
+        - Grid, Row, Flow
+    - repeater
+    - animations
+    - behavior
