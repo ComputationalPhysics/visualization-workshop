@@ -1,20 +1,20 @@
-#include "diffusion.h"
+#include "waves.h"
 
 #include <QPainter>
 
-Diffusion::Diffusion()
+Waves::Waves()
 {
     reset();
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
 }
 
-Diffusion::~Diffusion()
+Waves::~Waves()
 {
 
 }
 
-void Diffusion::setRowCount(int arg)
+void Waves::setRowCount(int arg)
 {
     if (m_rowCount == arg) {
         return;
@@ -26,7 +26,7 @@ void Diffusion::setRowCount(int arg)
     reset();
 }
 
-void Diffusion::setColumnCount(int arg)
+void Waves::setColumnCount(int arg)
 {
     if (m_columnCount == arg) {
         return;
@@ -38,7 +38,7 @@ void Diffusion::setColumnCount(int arg)
     reset();
 }
 
-void Diffusion::reset()
+void Waves::reset()
 {
     m_values.resize(m_rowCount);
     m_valuesNext.resize(m_rowCount);
@@ -56,33 +56,44 @@ void Diffusion::reset()
     }
 }
 
-void Diffusion::mousePressEvent(QMouseEvent *event)
+void Waves::mousePressEvent(QMouseEvent *event)
 {
-
+    createWave(event->x(), event->y(), 2.0);
 }
 
-void Diffusion::mouseMoveEvent(QMouseEvent *event)
+void Waves::mouseMoveEvent(QMouseEvent *event)
 {
-    int j = m_columnCount * event->x() / boundingRect().width();
-    int i = m_rowCount * event->y() / boundingRect().height();
+    createWave(event->x(), event->y(), 0.05);
+}
 
-    m_values[i][j] = 1.0;
-    m_values[i-1][j] = 0.3;
-    m_values[i+1][j] = 0.3;
-    m_values[i][j-1] = 0.3;
-    m_values[i][j+1] = 0.3;
+void Waves::createWave(double x, double y, double amplitude)
+{
+    int column = m_columnCount * x / boundingRect().width();
+    int row = m_rowCount * y / boundingRect().height();
+
+    for(int i = 0; i < m_rowCount; i++) {
+        for(int j = 0; j < m_columnCount; j++) {
+            double diffX = column - j;
+            double diffY = row - i;
+            double distance = sqrt(diffX*diffX + diffY*diffY);
+            double factor = 15.0;
+            double value = amplitude*exp(-distance*distance/(2.0*factor));
+            m_values[i][j] += value;
+            m_valuesPrevious[i][j] += value;
+        }
+    }
 
     update();
 }
 
-void Diffusion::paint(QPainter *painter)
+void Waves::paint(QPainter *painter)
 {
     QImage image(m_columnCount, m_rowCount, QImage::Format_RGBA8888);
 
     for(int i = 0; i < m_rowCount; i++) {
         for(int j = 0; j < m_columnCount; j++) {
-            double value = fmin(fmax(0, m_values[i][j]), 1.0);
-            QColor color(value * 255, 0, 0);
+            double value = 0.5 * (1.0 + fmin(fmax(m_values[i][j], -1.0), 1.0));
+            QColor color(0.0, 55 + value * 127, 55 + value * 200.0);
             image.setPixel(j, i, color.rgba());
         }
     }
@@ -90,17 +101,17 @@ void Diffusion::paint(QPainter *painter)
     painter->drawImage(boundingRect(), image);
 }
 
-int Diffusion::rowCount() const
+int Waves::rowCount() const
 {
     return m_rowCount;
 }
 
-int Diffusion::columnCount() const
+int Waves::columnCount() const
 {
     return m_columnCount;
 }
 
-void Diffusion::step()
+void Waves::step()
 {
     for(int i = 0; i < m_rowCount; i++) {
         for(int j = 0; j < m_columnCount; j++) {
@@ -112,22 +123,25 @@ void Diffusion::step()
             double value = m_values[i][j];
             double neighborValues = 0.0;
             if(left > 0) {
-                neighborValues += 0.25*m_values[i][left];
+                neighborValues += m_values[i][left];
             }
             if(right < m_columnCount - 1) {
-                neighborValues += 0.25*m_values[i][right];
+                neighborValues += m_values[i][right];
             }
             if(up > 0) {
-                neighborValues += 0.25*m_values[up][j];
+                neighborValues += m_values[up][j];
             }
             if(down < m_rowCount - 1) {
-                neighborValues += 0.25*m_values[down][j];
+                neighborValues += m_values[down][j];
             }
 //            double ratio = 0.01;
             double diff = neighborValues - value;
             double prev = m_valuesPrevious[i][j];
             double timeDiff = value - m_valuesPrevious[i][j];
-            m_valuesNext[i][j] = 2 * value - prev + 0.01 * (neighborValues - 4 * value);
+            m_valuesNext[i][j] = 2.0 * value - prev + 0.1 * (neighborValues - 4 * value);
+
+            // damping
+            m_valuesNext[i][j] *= 0.99;
         }
     }
 

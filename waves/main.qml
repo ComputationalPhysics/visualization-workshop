@@ -10,10 +10,9 @@ ApplicationWindow {
     height: 480
     visible: true
 
-    Diffusion {
+    Waves {
         id: simulator
         anchors.fill: parent
-
     }
 
     Timer {

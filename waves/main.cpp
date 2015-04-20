@@ -2,11 +2,11 @@
 #include <QQmlApplicationEngine>
 #include <QtQml>
 
-#include "diffusion.h"
+#include "waves.h"
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<Diffusion>("Workshop", 1, 0, "Diffusion");
+    qmlRegisterType<Waves>("Workshop", 1, 0, "Waves");
 
     QApplication app(argc, argv);
 

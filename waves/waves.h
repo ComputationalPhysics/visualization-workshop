@@ -7,14 +7,14 @@
 
 using namespace std;
 
-class Diffusion : public QQuickPaintedItem
+class Waves : public QQuickPaintedItem
 {
     Q_OBJECT
     Q_PROPERTY(int rowCount READ rowCount WRITE setRowCount NOTIFY rowCountChanged)
     Q_PROPERTY(int columnCount READ columnCount WRITE setColumnCount NOTIFY columnCountChanged)
 public:
-    Diffusion();
-    ~Diffusion();
+    Waves();
+    ~Waves();
 
     void paint(QPainter *painter);
 
@@ -41,6 +41,7 @@ private:
     vector<vector<double> > m_valuesPrevious;
 
     // QQuickItem interface
+    void createWave(double x, double y, double amplitude);
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
