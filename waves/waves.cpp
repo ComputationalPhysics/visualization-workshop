@@ -44,15 +44,9 @@ void Waves::reset()
     m_valuesNext.resize(m_rowCount);
     m_valuesPrevious.resize(m_rowCount);
     for(int i = 0; i < m_rowCount; i++) {
-        m_values[i].resize(m_columnCount);
-        m_valuesNext[i].resize(m_columnCount);
-        m_valuesPrevious[i].resize(m_columnCount);
-
-        for(int j = 0; j < m_columnCount; j++) {
-            m_values[i][j] = 0.0;
-            m_valuesNext[i][j] = 0.0;
-            m_valuesPrevious[i][j] = 0.0;
-        }
+        m_values[i].resize(m_columnCount, 0);
+        m_valuesNext[i].resize(m_columnCount, 0);
+        m_valuesPrevious[i].resize(m_columnCount, 0);
     }
 }
 
@@ -68,18 +62,18 @@ void Waves::mouseMoveEvent(QMouseEvent *event)
 
 void Waves::createWave(double x, double y, double amplitude)
 {
-    int column = m_columnCount * x / boundingRect().width();
-    int row = m_rowCount * y / boundingRect().height();
+    int column = m_columnCount * x / width();
+    int row = m_rowCount * y / height();
 
     for(int i = 0; i < m_rowCount; i++) {
         for(int j = 0; j < m_columnCount; j++) {
             double diffX = column - j;
             double diffY = row - i;
             double distance = sqrt(diffX*diffX + diffY*diffY);
-            double factor = 15.0;
-            double value = amplitude*exp(-distance*distance/(2.0*factor));
-            m_values[i][j] += value;
-            m_valuesPrevious[i][j] += value;
+            double sigma = 4.0;
+            double value = amplitude*exp(-distance*distance/(2.0*sigma*sigma));
+            m_values.at(i).at(j) += value;
+            m_valuesPrevious.at(i).at(j) += value;
         }
     }
 
@@ -92,7 +86,10 @@ void Waves::paint(QPainter *painter)
 
     for(int i = 0; i < m_rowCount; i++) {
         for(int j = 0; j < m_columnCount; j++) {
-            double value = 0.5 * (1.0 + fmin(fmax(m_values[i][j], -1.0), 1.0));
+            // ensure value between -1.0 and 1.0
+            double value = fmin(fmax(m_values.at(i).at(j), -1.0), 1.0);
+            // transform value to interval [0.0, 1.0]
+            value = 0.5 * (1.0 + value);
             QColor color = m_color;
             color.setRed(m_color.red() * value);
             color.setGreen(m_color.green() * value);
@@ -102,6 +99,9 @@ void Waves::paint(QPainter *painter)
     }
 
     painter->drawImage(boundingRect(), image);
+
+    QString a = QString("%1").arg(m_rowCount);
+    painter->drawText(20, 20, a);
 }
 
 int Waves::rowCount() const
@@ -133,7 +133,7 @@ void Waves::step()
             int up = i - 1;
             int down = i + 1;
 
-            double value = m_values[i][j];
+            double value = m_values.at(i).at(j);
             double neighborValues = 0.0;
             if(left > 0) {
                 neighborValues += m_values[i][left];
@@ -147,21 +147,17 @@ void Waves::step()
             if(down < m_rowCount - 1) {
                 neighborValues += m_values[down][j];
             }
-            double prev = m_valuesPrevious[i][j];
+            double prev = m_valuesPrevious.at(i).at(j);
             double C = m_courant;
-            m_valuesNext[i][j] = 2.0 * value - prev + C * (neighborValues - 4 * value);
+            m_valuesNext.at(i).at(j) = 2.0 * value - prev + C * (neighborValues - 4 * value);
 
             // damping
-            m_valuesNext[i][j] *= 0.99;
+            m_valuesNext.at(i).at(j) *= 0.99;
         }
     }
 
-    for(int i = 0; i < m_rowCount; i++) {
-        for(int j = 0; j < m_columnCount; j++) {
-            m_valuesPrevious[i][j] = m_values[i][j];
-            m_values[i][j] = m_valuesNext[i][j];
-        }
-    }
+    swap(m_valuesPrevious, m_values);
+    swap(m_values, m_valuesNext);
 
     update();
 }

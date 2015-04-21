@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>MainForm.ui.qml</file>
+        <file>anders.jpg</file>
+        <file>ColorPicker.qml</file>
     </qresource>
 </RCC>

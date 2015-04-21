@@ -15,6 +15,8 @@ ApplicationWindow {
         anchors.fill: parent
         color: Qt.rgba(redSlider.value, greenSlider.value, blueSlider.value)
         courant: courantSlider.value
+        rowCount: rowCountSlider.value
+        columnCount: columnCountSlider.value
     }
 
     Column {
@@ -23,6 +25,10 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
 
         width: parent.width * 0.3
+
+        Text {
+            text: "Color, RGB:"
+        }
 
         Slider {
             id: redSlider
@@ -40,6 +46,28 @@ ApplicationWindow {
             id: blueSlider
             width: parent.width
             value: 1.0
+        }
+
+        Text {
+            text: "Rows and columns:"
+        }
+
+        Slider {
+            id: rowCountSlider
+            minimumValue: 60
+            maximumValue: 500
+            value: 100
+        }
+
+        Slider {
+            id: columnCountSlider
+            minimumValue: 60
+            maximumValue: 500
+            value: 100
+        }
+
+        Text {
+            text: "Courant number and dt:"
         }
 
         Slider {
